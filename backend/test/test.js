@@ -1,5 +1,5 @@
 const {expect} = require("chai");
-const {time,loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
+const {time,loadFixture ,helper} = require("@nomicfoundation/hardhat-network-helpers");
 const {ethers} = require("hardhat");
 
 describe("Hostel",()=>{
@@ -99,7 +99,7 @@ describe("Hostel",()=>{
       await expect(hostel.connect(otherAcounts).agreementCompleted(1))
       .to.be.revertedWith("Only landlord can access this function")
     });
-    it("Should roos is vacent",async()=>{
+    it("Should Time left",async()=>{
       const {hostel} = await loadFixture(runEveryTime);
       let numberOfRooms = 0;
       await hostel.addRoom("sweet",
@@ -110,7 +110,7 @@ describe("Hostel",()=>{
       numberOfRooms++;
       // newTime= await time.increaseTo((hostel.RoomByNumber(1)).timestamp)
       await expect(hostel.agreementCompleted(1))
-      .to.be.revertedWith("Room is currently Vacent.")
+      .to.be.revertedWith("Time is left for contract to end")
     });
   });
   describe("Room detail ",()=>{

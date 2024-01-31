@@ -1,7 +1,7 @@
+///@title: Hostel contract
+///@author: BigBug_web3;
 // SPDX-License-Identifier: MIT
 pragma solidity  ^0.8.0;
-
-
 
 contract Hostel{
 
@@ -20,11 +20,10 @@ contract Hostel{
         uint rentPerMonth;
         uint securityDeposit;
         uint timestamp;
-        bool vacant;
+        bool Vacent;
         address payable landlord;
         address payable currentTenant;
     }
-
     mapping(uint =>Room) public RoomByNumber;
 
     struct RoomAgreement{
@@ -37,7 +36,6 @@ contract Hostel{
         uint timestamp;
         uint lockInPeriod;
     }
-
     mapping (uint => RoomAgreement) public RoomAgreementByNumber;
     
     struct Rent{
@@ -51,7 +49,6 @@ contract Hostel{
         address payable  tenantAddress;
         address payable  landlordAddress;
     }
-
     mapping(uint => Rent) public RentByNumber;
 
     modifier OnlyLandLord(uint _index){
@@ -62,12 +59,12 @@ contract Hostel{
         require(msg.sender != RoomByNumber[_index].landlord,"Only Tenant can access this function");
         _;
     }
-    modifier OnlyWhileVacant(uint _index){
-        require(RoomByNumber[_index].vacant== true,"Room is currently Occupid.");
+    modifier OnlyWhileVacent(uint _index){
+        require(RoomByNumber[_index].Vacent== true,"Room is currently Occupid.");
         _;
     }
     modifier OnlyWhileOccupid(uint _index){
-        require(RoomByNumber[_index].vacant== false,"Room is currently Vacent.");
+        require(RoomByNumber[_index].Vacent== false,"Room is currently Vacent.");
         _;
     }
     modifier EnoughRent(uint _index){
@@ -85,13 +82,13 @@ contract Hostel{
     modifier AgreementTimesLeft(uint _index){
         uint _agreementNumber = RoomByNumber[_index].agreementId;
         uint time = RoomAgreementByNumber[_agreementNumber].timestamp + RoomAgreementByNumber[_agreementNumber].lockInPeriod;
-        require(block.timestamp< time,"Agreement already Ended");
+        require(block.timestamp> time,"Agreement already Ended");
         _;
     }
     modifier AgreementTimesUp(uint _index){
         uint _agreementNumber = RoomByNumber[_index].agreementId;
         uint time = RoomAgreementByNumber[_agreementNumber].timestamp + RoomAgreementByNumber[_agreementNumber].lockInPeriod;
-        require(block.timestamp > time,"Time is left for contract to end");
+        require(block.timestamp < time,"Time is left for contract to end");
         _;
     }
     modifier RentTimesUp(uint _index){
@@ -106,7 +103,8 @@ contract Hostel{
         string memory _roomName,
         string memory _roomAddress,
         uint _rentCost,
-        uint _securityDeposit)public{
+        uint _securityDeposit)
+        public{
             require(msg.sender!=address(0) && msg.sender == landlord,"only landlord can call this function");
             numberOfRooms++;
             bool _vacancy =true;
@@ -121,7 +119,7 @@ contract Hostel{
              payable( msg.sender),
              payable(address(0)));
     }
-    function signAgreement(uint _index)public payable NotLandlord(_index)EnoughAgreementFee(_index) OnlyWhileVacant(_index){
+    function signAgreement(uint _index)public payable NotLandlord(_index)EnoughAgreementFee(_index) OnlyWhileVacent(_index){
         require(msg.sender!=address(0));
         address payable _landlord;
         RoomByNumber[_index].landlord;
@@ -129,7 +127,7 @@ contract Hostel{
         _landlord.transfer(totalFee);
         numberOfAgreement++;
         RoomByNumber[_index].currentTenant= payable(msg.sender);
-        RoomByNumber[_index].vacant=false;
+        RoomByNumber[_index].Vacent=false;
         RoomByNumber[_index].timestamp=block.timestamp;
         RoomByNumber[_index].agreementId = numberOfAgreement;
         RoomAgreementByNumber[numberOfAgreement]=RoomAgreement(_index,
@@ -147,7 +145,7 @@ contract Hostel{
         uint _rent = RoomByNumber[_index].rentPerMonth;
         _landlord.transfer(_rent);
         RoomByNumber[_index].currentTenant=payable(msg.sender);
-        RoomByNumber[_index].vacant = false;
+        RoomByNumber[_index].Vacent = false;
         numberOfRent++;
         RentByNumber[numberOfRent] = Rent(numberOfRent,
         _index,
@@ -162,14 +160,14 @@ contract Hostel{
     } 
     function agreementCompleted(uint _index) public payable OnlyLandLord(_index) AgreementTimesUp(_index) OnlyWhileOccupid(_index){
         require(msg.sender!=address(0));
-        RoomByNumber[_index].vacant =true;
+        RoomByNumber[_index].Vacent =true;
         address payable _tenant = RoomByNumber[_index].currentTenant;
         uint _securityDposit = RoomByNumber[_index].securityDeposit;
         _tenant.transfer(_securityDposit);
     }
     function agreementTerminated(uint _index) public OnlyLandLord(_index) AgreementTimesLeft(_index){
         require(msg.sender!=address(0));
-        RoomByNumber[_index].vacant=true;
+        RoomByNumber[_index].Vacent=true;
     }
     function roomDetail(uint _index) public view OnlyLandLord(_index) returns(Room memory){
       return(RoomByNumber[_index]);
