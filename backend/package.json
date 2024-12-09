@@ -2,7 +2,7 @@
   "name": "hardhat-project",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-    "hardhat": "^2.19.4"
+    "hardhat": "^2.22.16"
   },
   "dependencies": {
     "@nomicfoundation/hardhat-network-helpers": "^1.0.10"
